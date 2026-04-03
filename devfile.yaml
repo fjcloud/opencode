@@ -1,0 +1,30 @@
+schemaVersion: 2.2.2
+metadata:
+  name: opencode-workspace
+  description: Development environment with OpenCode AI coding agent ready to use
+attributes:
+  controller.devfile.io/storage-type: per-user
+components:
+  - name: dev
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryRequest: 2Gi
+      memoryLimit: 6Gi
+      cpuRequest: 1000m
+      cpuLimit: 4000m
+      mountSources: true
+      env:
+        - name: SHELL
+          value: /bin/bash
+commands:
+  - id: install-opencode
+    exec:
+      component: dev
+      commandLine: >-
+        curl -fsSL https://opencode.ai/install | bash &&
+        grep -q '.opencode/bin' "$HOME/.bashrc" 2>/dev/null ||
+        echo 'export PATH="$HOME/.opencode/bin:$PATH"' >> "$HOME/.bashrc"
+      workingDir: ${PROJECT_SOURCE}
+events:
+  postStart:
+    - install-opencode

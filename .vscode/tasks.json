@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "OpenCode",
+      "type": "shell",
+      "command": "export PATH=$HOME/.opencode/bin:$PATH; while [ ! -f $HOME/.opencode/bin/opencode ]; do echo 'Installing OpenCode...'; sleep 2; done; echo 'OPENCODE_READY'; opencode; exec bash -l",
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Installing",
+          "endsPattern": "^OPENCODE_READY$"
+        }
+      }
+    }
+  ]
+}
