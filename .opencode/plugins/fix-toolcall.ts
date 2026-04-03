@@ -45,7 +45,7 @@ export const FixToolCall: Plugin = async ({ client }) => {
 
       if (event.type === "session.error") {
         const now = Date.now()
-        if (now - lastRetryTime < 15_000) return
+        if (now - lastRetryTime < 3_000) return
         lastRetryTime = now
         sawToolCallXml = false
         await log("warn", "session.error - retrying")
@@ -60,7 +60,7 @@ export const FixToolCall: Plugin = async ({ client }) => {
         }
 
         const now = Date.now()
-        if (now - lastRetryTime < 15_000) return
+        if (now - lastRetryTime < 3_000) return
 
         lastRetryTime = now
         sawToolCallXml = false
