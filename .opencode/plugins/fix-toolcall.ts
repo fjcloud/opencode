@@ -17,7 +17,6 @@ export const FixToolCall: Plugin = async ({ client }) => {
     "tool.execute.before": async (input, output) => {
       toolExecuted = true
       activeSessionId = input.sessionID
-      await log("info", `tool.execute.before: ${input.tool}`)
       if (!output.args) return
       for (const [key, value] of Object.entries(output.args)) {
         if (typeof value === "string" && value.includes("</tool_call>")) {
@@ -39,8 +38,13 @@ export const FixToolCall: Plugin = async ({ client }) => {
 
       if (event.type === "message.part.updated") {
         const props = (event as any).properties ?? {}
-        const allText = JSON.stringify(props).slice(0, 500)
-        if (allText.includes("<tool_call>")) {
+        const keys = Object.keys(props)
+        const allText = JSON.stringify(props)
+
+        // Log structure of every message.part.updated so we can see what fields exist
+        await log("debug", `msg.part keys=${keys.join(",")} len=${allText.length} snippet=${allText.slice(0, 300)}`)
+
+        if (allText.includes("<tool_call>") || allText.includes("&lt;tool_call&gt;")) {
           sawToolCallXml = true
           toolExecuted = false
           await log("warn", `XML <tool_call> detected in message part`)
