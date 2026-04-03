@@ -6,11 +6,16 @@
       "name": "Qwen3.5-35B-A3B-AWQ",
       "options": {
         "baseURL": "http://qwen35-predictor.llm-inference.svc.cluster.local:8080/v1",
-        "apiKey": "dummy"
+        "apiKey": "dummy",
+        "chunkTimeout": 30000,
+        "timeout": 600000
       },
       "models": {
         "qwen35": {
           "name": "Qwen3.5-35B-A3B-AWQ-4bit",
+          "reasoning": true,
+          "tool_call": true,
+          "interleaved": { "field": "reasoning_content" },
           "limit": {
             "context": 262144,
             "output": 8192
