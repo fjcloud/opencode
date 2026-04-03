@@ -1,7 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 
 export const FixToolCall: Plugin = async ({ client }) => {
-  let lastRetryTime = 0
   let sawToolCallXml = false
   let toolExecuted = false
   let activeSessionId = ""
@@ -44,9 +43,6 @@ export const FixToolCall: Plugin = async ({ client }) => {
       }
 
       if (event.type === "session.error") {
-        const now = Date.now()
-        if (now - lastRetryTime < 3_000) return
-        lastRetryTime = now
         sawToolCallXml = false
         await log("warn", "session.error - retrying")
         await retry(client, activeSessionId, log)
@@ -59,10 +55,6 @@ export const FixToolCall: Plugin = async ({ client }) => {
           return
         }
 
-        const now = Date.now()
-        if (now - lastRetryTime < 3_000) return
-
-        lastRetryTime = now
         sawToolCallXml = false
         toolExecuted = false
 
