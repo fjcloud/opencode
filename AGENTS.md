@@ -9,13 +9,12 @@ This means low latency, no data leaves the cluster, and no API key management.
 
 ## Project layout
 
-- `src/` — all application source code lives here
-- `deploy/` — Kubernetes/OpenShift manifests (Kustomize-ready, GitOps-compatible)
-- `opencode.json` — OpenCode config (model, provider)
-- `devfile.yaml` — DevWorkspace definition
-- `AGENTS.md` — this file
+When creating a new application, scaffold these directories:
 
-Always create new code under `src/` and deployment manifests under `deploy/`. Keep the repo root clean.
+- `src/` — all application source code and Dockerfile
+- `deploy/` — Kubernetes/OpenShift manifests (Kustomize-ready, GitOps-compatible)
+
+These are created by you (the agent) during project bootstrap. The workspace root also contains config files (`opencode.json`, `devfile.yaml`, `AGENTS.md`) — do not modify them.
 
 ## Bootstrap — first thing to do for a new app
 
