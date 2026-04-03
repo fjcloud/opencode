@@ -11,8 +11,6 @@ export const FixToolCall: Plugin = async ({ client }) => {
       body: { service: "fix-toolcall", level, message },
     })
 
-  await log("info", "Plugin loaded")
-
   return {
     "tool.execute.before": async (input, output) => {
       toolExecuted = true
@@ -38,31 +36,23 @@ export const FixToolCall: Plugin = async ({ client }) => {
 
       if (event.type === "message.part.updated") {
         const props = (event as any).properties ?? {}
-        const keys = Object.keys(props)
-        const allText = JSON.stringify(props)
-
-        // Log structure of every message.part.updated so we can see what fields exist
-        await log("debug", `msg.part keys=${keys.join(",")} len=${allText.length} snippet=${allText.slice(0, 300)}`)
-
-        if (allText.includes("<tool_call>") || allText.includes("&lt;tool_call&gt;")) {
+        const text = JSON.stringify(props)
+        if (text.includes("<tool_call>") || text.includes("&lt;tool_call&gt;")) {
           sawToolCallXml = true
           toolExecuted = false
-          await log("warn", `XML <tool_call> detected in message part`)
         }
       }
 
       if (event.type === "session.error") {
-        await log("error", `session.error fired`)
         const now = Date.now()
         if (now - lastRetryTime < 15_000) return
         lastRetryTime = now
         sawToolCallXml = false
+        await log("warn", "session.error - retrying")
         await retry(client, activeSessionId, log)
       }
 
       if (event.type === "session.idle") {
-        await log("info", `session.idle: sawXml=${sawToolCallXml} toolExec=${toolExecuted} sid=${activeSessionId}`)
-
         if (!sawToolCallXml || toolExecuted) {
           sawToolCallXml = false
           toolExecuted = false
@@ -84,13 +74,9 @@ export const FixToolCall: Plugin = async ({ client }) => {
 }
 
 async function retry(client: any, sessionId: string, log: any) {
-  if (!sessionId) {
-    await log("error", "No session ID available for retry")
-    return
-  }
+  if (!sessionId) return
 
   try {
-    await log("info", `Retrying on session ${sessionId}`)
     await client.session.prompt({
       path: { id: sessionId },
       body: {
