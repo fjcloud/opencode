@@ -103,3 +103,7 @@ Rules:
 - **Builder**: use the base image's `WORKDIR` (e.g. `/opt/app-root/src`), build output into `./` — never `-o /some-root-path`
 - **Runtime**: `COPY --from=builder` with full path, then `chown 1001:0` + `chmod g=u` on all writable dirs
 - OpenShift assigns random UID but always GID 0 — dirs must be group-writable
+
+## Code rules
+
+- HTML/templates MUST be in separate `.html` files — never inline HTML strings in application code
