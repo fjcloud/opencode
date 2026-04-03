@@ -5,40 +5,49 @@ export const FixToolCall: Plugin = async ({ client }) => {
   let sawToolCallXml = false
   let toolExecuted = false
 
+  const log = (level: string, message: string) =>
+    client.app.log({
+      body: { service: "fix-toolcall", level, message },
+    })
+
+  await log("info", "Plugin loaded")
+
   return {
     "tool.execute.before": async (input, output) => {
       toolExecuted = true
+      await log("info", `tool.execute.before: ${input.tool}`)
       if (!output.args) return
       for (const [key, value] of Object.entries(output.args)) {
         if (typeof value === "string" && value.includes("</tool_call>")) {
           output.args[key] = value.replace(/<\/?tool_call>/g, "").trim()
+          await log("warn", `Stripped XML from arg "${key}"`)
         }
       }
     },
 
     event: async ({ event }) => {
-      // track assistant messages for XML leaks
       if (event.type === "message.part.updated") {
         const props = (event as any).properties ?? {}
-        const text =
-          props.text ?? props.content ?? props.reasoning ?? ""
-        if (typeof text === "string" && text.includes("<tool_call>")) {
+        const allText = JSON.stringify(props).slice(0, 500)
+        if (allText.includes("<tool_call>")) {
           sawToolCallXml = true
           toolExecuted = false
+          await log("warn", `XML <tool_call> detected in message part`)
         }
       }
 
-      // session error: always retry
       if (event.type === "session.error") {
+        await log("error", `session.error: ${JSON.stringify((event as any).properties ?? {}).slice(0, 300)}`)
         const now = Date.now()
         if (now - lastRetryTime < 15_000) return
         lastRetryTime = now
         sawToolCallXml = false
-        await retry(client)
+        await retry(client, log)
       }
 
-      // session idle: check if we saw XML but no tool execution
       if (event.type === "session.idle") {
+        await log("info", `session.idle: sawXml=${sawToolCallXml} toolExec=${toolExecuted}`)
+
         if (!sawToolCallXml || toolExecuted) {
           sawToolCallXml = false
           toolExecuted = false
@@ -52,27 +61,23 @@ export const FixToolCall: Plugin = async ({ client }) => {
         sawToolCallXml = false
         toolExecuted = false
 
-        await client.app.log({
-          body: {
-            service: "fix-toolcall",
-            level: "warn",
-            message:
-              "Silent halt detected: saw <tool_call> XML but no tool executed. Retrying.",
-          },
-        })
-
-        await retry(client)
+        await log("warn", "Silent halt detected - retrying")
+        await retry(client, log)
       }
     },
   }
 }
 
-async function retry(client: any) {
+async function retry(client: any, log: any) {
   try {
     const sessions = await client.session.list()
     const active = sessions.body?.[0]
-    if (!active?.id) return
+    if (!active?.id) {
+      await log("error", "No active session found")
+      return
+    }
 
+    await log("info", `Retrying on session ${active.id}`)
     await client.session.chat({
       body: {
         sessionID: active.id,
@@ -84,13 +89,7 @@ async function retry(client: any) {
         ],
       },
     })
-  } catch (e) {
-    await client.app.log({
-      body: {
-        service: "fix-toolcall",
-        level: "error",
-        message: `Retry failed: ${e}`,
-      },
-    })
+  } catch (e: any) {
+    await log("error", `Retry failed: ${e?.message ?? e}`)
   }
 }
