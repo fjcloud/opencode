@@ -16,6 +16,12 @@
           "reasoning": true,
           "tool_call": true,
           "interleaved": { "field": "reasoning_content" },
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 10000
+            }
+          },
           "limit": {
             "context": 262144,
             "output": 32768
