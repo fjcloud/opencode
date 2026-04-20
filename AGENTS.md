@@ -114,6 +114,17 @@ Rules:
 - **Static assets**: COPY all `templates/` and `static/` dirs into runtime — they are NOT embedded in the binary
 - OpenShift assigns random UID but always GID 0 — dirs must be group-writable
 
+## Networking
+
+Service `targetPort` MUST match the container's `EXPOSE` port (8080), not default 80:
+
+```yaml
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+```
+
 ## Code rules
 
 - HTML/templates MUST be in separate `.html` files under `templates/` or `static/` — NEVER inline HTML strings in Go, Python, or any application code. Use `template.ParseFiles()`, `template.ParseGlob()`, or equivalent.
