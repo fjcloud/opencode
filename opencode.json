@@ -7,7 +7,7 @@
       "options": {
         "baseURL": "http://qwen36-predictor.llm-inference.svc.cluster.local:8080/v1",
         "apiKey": "dummy",
-        "chunkTimeout": 30000,
+        "chunkTimeout": 120000,
         "timeout": 600000
       },
       "models": {
