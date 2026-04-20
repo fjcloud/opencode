@@ -1,22 +1,22 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "qwen35": {
+    "qwen36": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Qwen3.5-35B-A3B-AWQ",
+      "name": "Qwen3.6-35B-A3B-AWQ",
       "options": {
-        "baseURL": "http://qwen35-predictor.llm-inference.svc.cluster.local:8080/v1",
+        "baseURL": "http://qwen36-predictor.llm-inference.svc.cluster.local:8080/v1",
         "apiKey": "dummy",
         "chunkTimeout": 30000,
         "timeout": 600000
       },
       "models": {
-        "qwen35": {
-          "name": "Qwen3.5-35B-A3B-AWQ-4bit",
+        "qwen36": {
+          "name": "Qwen3.6-35B-A3B-AWQ-4bit",
           "reasoning": true,
           "tool_call": true,
           "interleaved": { "field": "reasoning_content" },
-"limit": {
+          "limit": {
             "context": 262144,
             "output": 32768
           }
@@ -24,7 +24,7 @@
       }
     }
   },
-  "model": "qwen35/qwen35",
+  "model": "qwen36/qwen36",
   "agent": {
     "plan": {
       "temperature": 0.1
